@@ -1,7 +1,7 @@
-log/*
-build/*
-install/*
-src/driver_detection/resource/driver_detection
-
-*/__pycache__/*
+**/log/*
+**/build/*
+**/install/*
+**/__pycache__/*
 **/test/**
+
+src/driver_detection/resource/driver_detection

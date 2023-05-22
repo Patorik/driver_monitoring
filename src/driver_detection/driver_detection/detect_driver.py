@@ -10,21 +10,10 @@ class DriverDetection(Node):
     def __init__(self):
         super().__init__('driver_detector')
         self.cap = cv2.VideoCapture(0)
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 800)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 600)
-        self.image_face_pub = self.create_publisher(Image, 'test_topic', 1)
-        self.image_eyes_pub = self.create_publisher(Image, 'test_topic', 1)
-        self.image_hands_pub = self.create_publisher(Image, 'test_topic', 1)
-        # timer_period = 0.1
-        # self.timer = self.create_timer(timer_period, self.timer_callback)
-        # self.i = 0
-
-    # def timer_callback(self):
-    #     msg = String()
-    #     msg.data = 'Hello World: %d' % self.i
-    #     self.publisher.publish(msg)
-    #     self.get_logger().info('Publishing: "%s"' % msg.data)
-    #     self.i += 1
+        print(self.cap.get(cv2.CAP_PROP_FPS))
+        self.image_face_pub = self.create_publisher(Image, 'image_face', 1)
+        self.image_eyes_pub = self.create_publisher(Image, 'image_eyes', 1)
+        self.image_hands_pub = self.create_publisher(Image, 'image_hands', 1)
 
     def detect(self):
         ret, frame = self.cap.read()
@@ -41,7 +30,11 @@ class DriverDetection(Node):
 
 
             face_msg = self.convertToROS2Image(frame)
+            eyes_msg = self.convertToROS2Image(frame)
+            hands_msg = self.convertToROS2Image(frame)
             self.image_face_pub.publish(face_msg)
+            self.image_eyes_pub.publish(eyes_msg)
+            self.image_hands_pub.publish(hands_msg)
         
         self.cap.release()
         cv2.destroyAllWindows()
