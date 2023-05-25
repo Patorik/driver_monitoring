@@ -22,7 +22,7 @@ class DriverDetection(Node):
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
         self.image_face_pub = self.create_publisher(Image, 'image_face', 1)
         self.image_eyes_pub = self.create_publisher(Image, 'image_eyes', 1)
-        self.image_hands_pub = self.create_publisher(Image, 'image_hands', 1)
+        self.image_pose_pub = self.create_publisher(Image, 'image_pose', 1)
         self.br = CvBridge()
 
     def detect(self):
@@ -37,7 +37,7 @@ class DriverDetection(Node):
                 break
 
 
-            self.poseDetector.findPose(frame)
+            image_pose = self.poseDetector.findPose(frame)
             cTime = time.time()
             fps = 1/(cTime-pTime)
             pTime = cTime
@@ -51,7 +51,7 @@ class DriverDetection(Node):
 
             self.image_face_pub.publish(self.br.cv2_to_imgmsg(frame))
             self.image_eyes_pub.publish(self.br.cv2_to_imgmsg(frame))
-            self.image_hands_pub.publish(self.br.cv2_to_imgmsg(frame))
+            self.image_pose_pub.publish(self.br.cv2_to_imgmsg(image_pose))
         
         self.cap.release()
         cv2.destroyAllWindows()
