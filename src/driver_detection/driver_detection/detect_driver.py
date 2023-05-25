@@ -30,6 +30,7 @@ class DriverDetection(Node):
         ret, frame = self.cap.read()
         while True:
             ret, frame = self.cap.read()
+            cv2.flip(frame, 1)
 
             if not ret:
                 print("Can't recieve frame (stream end?). Ending...")
