@@ -1,6 +1,7 @@
 import cv2
 import mediapipe as mp
 import time
+import itertools
 
 class FaceMeshDetector:
     def __init__(self, static_image_mode=False, max_num_faces=1, refine_landmarks=True, min_detection_confidence=0.5, min_tracking_confidence=0.5):
@@ -19,19 +20,38 @@ class FaceMeshDetector:
     def findIris(self, img, draw=True):
         res_img = img.copy()
         imgRGB = cv2.cvtColor(res_img, cv2.COLOR_BGR2RGB)
-        results = self.faceMesh.process(imgRGB)
+        self.irisLM = self.faceMesh.process(imgRGB)
         # print(results)
+        # LEFT_EYE_INDEXES = list(set(itertools.chain(self.mpFaceMesh.FACEMESH_LEFT_EYE)))
+        # RIGHT_EYE_INDEXES = list(set(itertools.chain(self.mpFaceMesh.FACEMESH_RIGHT_EYE)))
+        # print(f"Left eye indexes:{LEFT_EYE_INDEXES}")
+        # print(f"Right eye indexes:{RIGHT_EYE_INDEXES}")
 
-        if results.multi_face_landmarks:
-            for faceLms in results.multi_face_landmarks:
+        if self.irisLM.multi_face_landmarks:
+            for faceLms in self.irisLM.multi_face_landmarks:
                 if draw:
-                    self.mpDraw.draw_landmarks(res_img, faceLms, self.mpFaceMesh.FACEMESH_IRISES, self.drawSpec, self.mp_drawing_styles.get_default_face_mesh_iris_connections_style())
-                # for id, lm in enumerate(faceLms.landmark):
-                #     #print(lm)
-                #     ih, iw, ic = img.shape
-                #     x, y = int(lm.x * iw), int(lm.y * ih)
-                #     print(id, x, y)
+                    self.mpDraw.draw_landmarks(res_img, faceLms, self.mpFaceMesh.FACEMESH_IRISES, None, self.mp_drawing_styles.get_default_face_mesh_iris_connections_style())
         return res_img
+    
+    def getIrisPosition(self, img, draw=True):
+        irisLM_pos = []
+        if self.irisLM.multi_face_landmarks:
+            for faceLms in self.irisLM.multi_face_landmarks:
+                for id, lm in enumerate(faceLms.landmark):
+                    if id in [469, 470, 471, 472]:                              # https://github.com/google/mediapipe/blob/7c28c5d58ffbcb72043cbe8c9cc32b40aaebac41/mediapipe/python/solutions/face_mesh_connections.py
+                        # print(lm)
+                        print("RIGHT EYE IRIS")
+                        ih, iw, ic = img.shape
+                        x, y = int(lm.x * iw), int(lm.y * ih)
+                        print(f"ID:{id}, {x}, {y}")
+                    if id in [474, 475, 476, 477]:
+                        print("LEFT EYE IRIS")
+                        ih, iw, ic = img.shape
+                        x, y = int(lm.x * iw), int(lm.y * ih)
+                        print(f"ID:{id}, {x}, {y}")
+
+                    
+
 
 
 def main():
@@ -41,7 +61,8 @@ def main():
     while True:
         success, frame = cap.read()
 
-        detector.findIris(frame)
+        frame = detector.findIris(frame)
+        detector.getIrisPosition(frame)
                 
         cTime = time.time()
         fps = 1/(cTime-pTime)
