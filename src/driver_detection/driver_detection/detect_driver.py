@@ -8,6 +8,7 @@ from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 
 from .PoseEstimationModule import PoseDetector
+from .FaceMeshDetector import FaceMeshDetector
 
 import time
 
@@ -17,6 +18,7 @@ class DriverDetection(Node):
         self.cap = cv2.VideoCapture(0)
 
         self.poseDetector = PoseDetector()
+        self.faceMeshDetector = FaceMeshDetector()
         # self.cap = cv2.VideoCapture(0)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
@@ -38,6 +40,7 @@ class DriverDetection(Node):
 
 
             image_pose = self.poseDetector.findPose(frame)
+            image_eyes = self.faceMeshDetector.findIris(frame)
             cTime = time.time()
             fps = 1/(cTime-pTime)
             pTime = cTime
@@ -50,8 +53,8 @@ class DriverDetection(Node):
                 break
 
             self.image_face_pub.publish(self.br.cv2_to_imgmsg(frame))
-            self.image_eyes_pub.publish(self.br.cv2_to_imgmsg(frame))
             self.image_pose_pub.publish(self.br.cv2_to_imgmsg(image_pose))
+            self.image_eyes_pub.publish(self.br.cv2_to_imgmsg(image_eyes))
         
         self.cap.release()
         cv2.destroyAllWindows()
