@@ -35,20 +35,32 @@ class FaceMeshDetector:
     
     def getIrisPosition(self, img, draw=True):
         irisLM_pos = []
+        ih, iw, ic = img.shape
         if self.irisLM.multi_face_landmarks:
             for faceLms in self.irisLM.multi_face_landmarks:
-                for id, lm in enumerate(faceLms.landmark):
-                    if id in [469, 470, 471, 472]:                              # https://github.com/google/mediapipe/blob/7c28c5d58ffbcb72043cbe8c9cc32b40aaebac41/mediapipe/python/solutions/face_mesh_connections.py
-                        # print(lm)
-                        print("RIGHT EYE IRIS")
-                        ih, iw, ic = img.shape
-                        x, y = int(lm.x * iw), int(lm.y * ih)
-                        print(f"ID:{id}, {x}, {y}")
-                    if id in [474, 475, 476, 477]:
-                        print("LEFT EYE IRIS")
-                        ih, iw, ic = img.shape
-                        x, y = int(lm.x * iw), int(lm.y * ih)
-                        print(f"ID:{id}, {x}, {y}")
+                right_iris = faceLms.landmark[474:478] # https://github.com/google/mediapipe/blob/7c28c5d58ffbcb72043cbe8c9cc32b40aaebac41/mediapipe/python/solutions/face_mesh_connections.py
+                right_iris_center_x = 0
+                right_iris_center_y = 0
+                for rm in right_iris:
+                    right_iris_center_x = right_iris_center_x + rm.x
+                    right_iris_center_y = right_iris_center_y + rm.y
+                right_iris_center_x = right_iris_center_x/4 * iw
+                right_iris_center_y = right_iris_center_y/4 * ih
+                print(f"Right eye:\n x: {int(right_iris_center_x)}, y: {int(right_iris_center_y)}")
+                
+                left_iris = faceLms.landmark[469:473]
+                left_iris_center_x = 0
+                left_iris_center_y = 0
+                for lm in left_iris:
+                    left_iris_center_x = left_iris_center_x + lm.x
+                    left_iris_center_y = left_iris_center_y + lm.y
+                left_iris_center_x = left_iris_center_x/4 * iw
+                left_iris_center_y = left_iris_center_y/4 * ih
+                print(f"Left eye:\n x: {int(left_iris_center_x)}, y: {int(left_iris_center_y)}")
+        
+            return [right_iris_center_x, right_iris_center_y, left_iris_center_x, left_iris_center_y]
+        return None
+
 
                     
 
@@ -60,6 +72,8 @@ def main():
     detector = FaceMeshDetector()
     while True:
         success, frame = cap.read()
+
+        frame = cv2.flip(frame, 1)
 
         frame = detector.findIris(frame)
         detector.getIrisPosition(frame)
