@@ -17,15 +17,21 @@ class FaceMeshDetector:
         self.drawSpec = self.mpDraw.DrawingSpec(thickness=1, circle_radius=2)
         self.mp_drawing_styles = mp.solutions.drawing_styles
 
+    def findFaceMesh(self, img, draw=True):
+        res_img = img.copy()
+        imgRGB = cv2.cvtColor(res_img, cv2.COLOR_BGR2RGB)
+        self.irisLM = self.faceMesh.process(imgRGB)
+
+        if self.irisLM.multi_face_landmarks:
+            for faceLms in self.irisLM.multi_face_landmarks:
+                if draw:
+                    self.mpDraw.draw_landmarks(res_img, faceLms, self.mpFaceMesh.FACEMESH_CONTOURS, self.drawSpec, self.drawSpec)
+        return res_img
+
     def findIris(self, img, draw=True):
         res_img = img.copy()
         imgRGB = cv2.cvtColor(res_img, cv2.COLOR_BGR2RGB)
         self.irisLM = self.faceMesh.process(imgRGB)
-        # print(results)
-        # LEFT_EYE_INDEXES = list(set(itertools.chain(self.mpFaceMesh.FACEMESH_LEFT_EYE)))
-        # RIGHT_EYE_INDEXES = list(set(itertools.chain(self.mpFaceMesh.FACEMESH_RIGHT_EYE)))
-        # print(f"Left eye indexes:{LEFT_EYE_INDEXES}")
-        # print(f"Right eye indexes:{RIGHT_EYE_INDEXES}")
 
         if self.irisLM.multi_face_landmarks:
             for faceLms in self.irisLM.multi_face_landmarks:
@@ -46,7 +52,7 @@ class FaceMeshDetector:
                     right_iris_center_y = right_iris_center_y + rm.y
                 right_iris_center_x = right_iris_center_x/4 * iw
                 right_iris_center_y = right_iris_center_y/4 * ih
-                print(f"Right eye:\n x: {int(right_iris_center_x)}, y: {int(right_iris_center_y)}")
+                # print(f"Right eye:\n x: {int(right_iris_center_x)}, y: {int(right_iris_center_y)}")
                 
                 left_iris = faceLms.landmark[469:473]
                 left_iris_center_x = 0
@@ -56,15 +62,10 @@ class FaceMeshDetector:
                     left_iris_center_y = left_iris_center_y + lm.y
                 left_iris_center_x = left_iris_center_x/4 * iw
                 left_iris_center_y = left_iris_center_y/4 * ih
-                print(f"Left eye:\n x: {int(left_iris_center_x)}, y: {int(left_iris_center_y)}")
+                # print(f"Left eye:\n x: {int(left_iris_center_x)}, y: {int(left_iris_center_y)}")
         
             return [right_iris_center_x, right_iris_center_y, left_iris_center_x, left_iris_center_y]
         return None
-
-
-                    
-
-
 
 def main():
     cap = cv2.VideoCapture(0)

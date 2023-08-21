@@ -6,9 +6,11 @@ from rclpy.node import Node
 
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
+from std_msgs.msg import Float32MultiArray
 
 from .PoseEstimationModule import PoseDetector
 from .FaceMeshDetector import FaceMeshDetector
+from .HandTrackingModule import HandDetector
 
 import time
 
@@ -19,12 +21,15 @@ class DriverDetection(Node):
 
         self.poseDetector = PoseDetector()
         self.faceMeshDetector = FaceMeshDetector()
-        # self.cap = cv2.VideoCapture(0)
+        self.handDetector = HandDetector()
+
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
         self.image_face_pub = self.create_publisher(Image, 'image_face', 1)
-        self.image_eyes_pub = self.create_publisher(Image, 'image_eyes', 1)
+        self.image_iris_pub = self.create_publisher(Image, 'image_iris', 1)
         self.image_pose_pub = self.create_publisher(Image, 'image_pose', 1)
+        self.image_hand_pub = self.create_publisher(Image, 'image_hand', 1)
+        self.iris_coords_pub = self.create_publisher(Float32MultiArray, 'iris_coordinates', 1)
         self.br = CvBridge()
 
     def detect(self):
@@ -38,9 +43,10 @@ class DriverDetection(Node):
                 print("Can't recieve frame (stream end?). Ending...")
                 break
 
-
+            image_face = self.faceMeshDetector.findFaceMesh(frame)
             image_pose = self.poseDetector.findPose(frame)
-            image_eyes = self.faceMeshDetector.findIris(frame)
+            image_iris = self.faceMeshDetector.findIris(frame)
+            image_hands = self.handDetector.findHands(frame)
             cTime = time.time()
             fps = 1/(cTime-pTime)
             pTime = cTime
@@ -48,13 +54,18 @@ class DriverDetection(Node):
             cv2.rectangle(frame, (0,0), (125, 30), (0, 0, 0), cv2.FILLED)
             cv2.putText(frame, f"FPS: {str(int(fps))}", (0, 25), cv2.FONT_HERSHEY_PLAIN, 2, (255, 255, 255), 2)
 
-            cv2.imshow('Frame',frame)
+            # cv2.imshow('Frame',frame)
             if cv2.waitKey(1) == ord('q'):
                 break
 
-            self.image_face_pub.publish(self.br.cv2_to_imgmsg(frame))
+            iris_coordinates = Float32MultiArray()
+            iris_coordinates.data = self.faceMeshDetector.getIrisPosition(image_iris)
+
+            self.image_face_pub.publish(self.br.cv2_to_imgmsg(image_face))
+            self.image_hand_pub.publish(self.br.cv2_to_imgmsg(image_hands))
             self.image_pose_pub.publish(self.br.cv2_to_imgmsg(image_pose))
-            self.image_eyes_pub.publish(self.br.cv2_to_imgmsg(image_eyes))
+            self.image_iris_pub.publish(self.br.cv2_to_imgmsg(image_iris))
+            self.iris_coords_pub.publish(iris_coordinates)
         
         self.cap.release()
         cv2.destroyAllWindows()
