@@ -20,10 +20,10 @@ class FaceMeshDetector:
     def findFaceMesh(self, img, draw=True):
         res_img = img.copy()
         imgRGB = cv2.cvtColor(res_img, cv2.COLOR_BGR2RGB)
-        self.irisLM = self.faceMesh.process(imgRGB)
+        self.faceMeshLM = self.faceMesh.process(imgRGB)
 
-        if self.irisLM.multi_face_landmarks:
-            for faceLms in self.irisLM.multi_face_landmarks:
+        if self.faceMeshLM.multi_face_landmarks:
+            for faceLms in self.faceMeshLM.multi_face_landmarks:
                 if draw:
                     self.mpDraw.draw_landmarks(res_img, faceLms, self.mpFaceMesh.FACEMESH_CONTOURS, self.drawSpec, self.drawSpec)
         return res_img
