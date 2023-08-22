@@ -65,7 +65,7 @@ class FaceMeshDetector:
                 # print(f"Left eye:\n x: {int(left_iris_center_x)}, y: {int(left_iris_center_y)}")
         
             return [right_iris_center_x, right_iris_center_y, left_iris_center_x, left_iris_center_y]
-        return None
+        return [0.0, 0.0, 0.0, 0.0]
 
 def main():
     cap = cv2.VideoCapture(0)
