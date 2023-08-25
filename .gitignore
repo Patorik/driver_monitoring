@@ -5,4 +5,4 @@
 **/test/**
 
 src/driver_detection/resource/driver_detection
-src/eye_analyzer/resource/eye_analyzer
+src/eye_analyser/resource/eye_analyser
