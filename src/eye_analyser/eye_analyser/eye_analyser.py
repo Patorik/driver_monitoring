@@ -8,7 +8,8 @@ class Analyser(Node):
     def __init__(self):
         super().__init__('driver_detector')
         self.iris_coords_sub = self.create_subscription(Float32MultiArray, 'iris_coordinates', self.irisCoordsCallback, 1)
-        self.eye_keypoints_sub = self.create_subscription(Float32MultiArray, 'eye_keypoints_coords', self.eyeKeyPointsCallback, 1)
+        self.right_eye_keypoints_sub = self.create_subscription(Float32MultiArray, 'right_eye_keypoints_coords', self.rightEyeKeyPointsCallback, 1)
+        self.left_eye_keypoints_sub = self.create_subscription(Float32MultiArray, 'left_eye_keypoints_coords', self.leftEyeKeyPointsCallback, 1)
         self.right_eye_closed_pub = self.create_publisher(Bool, 'right_eye_closed')
         self.left_eye_closed_pub = self.create_publisher(Bool, 'left_eye_closed')
         self.is_disturbed_pub = self.create_publisher(Bool, 'is_eye_disturbed')
@@ -17,7 +18,10 @@ class Analyser(Node):
     def irisCoordsCallback(self, msg):
         self.get_logger().info('I heard: "%s"' % msg.data)
         
-    def eyeKeyPointsCallback(self, msg):
+    def rightEyeKeyPointsCallback(self, msg):
+        self.get_logger().info('I heard: "%s"' % msg.data)
+    
+    def leftEyeKeyPointsCallback(self, msg):
         self.get_logger().info('I heard: "%s"' % msg.data)
 
     def analyze(self):

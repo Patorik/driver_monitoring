@@ -30,6 +30,8 @@ class DriverDetection(Node):
         self.image_pose_pub = self.create_publisher(Image, 'image_pose', 1)
         self.image_hand_pub = self.create_publisher(Image, 'image_hand', 1)
         self.iris_coords_pub = self.create_publisher(Float32MultiArray, 'iris_coordinates', 1)
+        self.iris_coords_pub = self.create_publisher(Float32MultiArray, 'right_eye_keypoints_coords', 1)
+        self.iris_coords_pub = self.create_publisher(Float32MultiArray, 'left_eye_keypoints_coords', 1)
         self.br = CvBridge()
 
     def detect(self):
