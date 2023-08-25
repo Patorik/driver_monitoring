@@ -2,11 +2,23 @@ import rclpy
 from rclpy.node import Node
 
 from std_msgs.msg import Bool
-from std_msgs.msg import String
+from std_msgs.msg import Float32MultiArray
 
 class Analyser(Node):
     def __init__(self):
         super().__init__('driver_detector')
+        self.iris_coords_sub = self.create_subscription(Float32MultiArray, 'iris_coordinates', self.irisCoordsCallback, 1)
+        self.eye_keypoints_sub = self.create_subscription(Float32MultiArray, 'eye_keypoints_coords', self.eyeKeyPointsCallback, 1)
+        self.right_eye_closed_pub = self.create_publisher(Bool, 'right_eye_closed')
+        self.left_eye_closed_pub = self.create_publisher(Bool, 'left_eye_closed')
+        self.is_disturbed_pub = self.create_publisher(Bool, 'is_eye_disturbed')
+        self.is_sleeping_pub = self.create_publisher(Bool, 'is_sleeping')
+
+    def irisCoordsCallback(self, msg):
+        self.get_logger().info('I heard: "%s"' % msg.data)
+        
+    def eyeKeyPointsCallback(self, msg):
+        self.get_logger().info('I heard: "%s"' % msg.data)
 
     def analyze(self):
         pass
