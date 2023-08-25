@@ -2,6 +2,7 @@ import rclpy
 from rclpy.node import Node
 
 from std_msgs.msg import Bool
+from std_msgs.msg import String
 
 class Analyser(Node):
     def __init__(self):
