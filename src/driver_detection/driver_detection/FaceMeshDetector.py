@@ -76,6 +76,11 @@ class FaceMeshDetector:
         image_height, image_width= img.shape[:2]
         mesh_coord = [(int(point.x * image_width), int(point.y * image_height)) for point in results.multi_face_landmarks[0].landmark]
         return mesh_coord
+    
+    def normalizeEyesToPixelCoordinates(self, img, results):
+        image_height, image_width= img.shape[:2]
+        mesh_coord = [[point.x * image_width, point.y * image_height] for point in results.multi_face_landmarks[0].landmark]
+        return mesh_coord
 
     def findIris(self, img, draw=True):
         res_img = img.copy()
@@ -87,7 +92,7 @@ class FaceMeshDetector:
                     self.mpDraw.draw_landmarks(res_img, faceLms, self.mpFaceMesh.FACEMESH_IRISES, None, self.mp_drawing_styles.get_default_face_mesh_iris_connections_style())
         return res_img
     
-    def getIrisPosition(self, img, draw=True):
+    def getIrisPosition(self, img):
         image_height, image_width = img.shape[:2]
         if self.irisLM.multi_face_landmarks:
             for faceLms in self.irisLM.multi_face_landmarks:
@@ -101,6 +106,27 @@ class FaceMeshDetector:
         
             return [right_iris_center_x, right_iris_center_y, left_iris_center_x, left_iris_center_y]
         return [0.0, 0.0, 0.0, 0.0]
+    
+    def getEyePosition(self, img):
+        res_img = img.copy()
+        result = []
+        if self.faceMeshLM.multi_face_landmarks:
+            mesh_coords = self.normalizeEyesToPixelCoordinates(res_img, self.faceMeshLM)
+            left_eye_coords = [mesh_coords[p] for p in LEFT_EYE]
+            right_eye_coords = [mesh_coords[p] for p in RIGHT_EYE]
+            right_eye_top = right_eye_coords[12]
+            right_eye_bottom = right_eye_coords[4]
+            right_eye_left = right_eye_coords[8]
+            right_eye_right = right_eye_coords[0]
+            left_eye_top = left_eye_coords[12]
+            left_eye_bottom = left_eye_coords[4]
+            left_eye_left = left_eye_coords[8]
+            left_eye_right = left_eye_coords[0]
+            result = [[right_eye_top[0], right_eye_top[1], right_eye_bottom[0], right_eye_bottom[0],
+                       right_eye_left[0], right_eye_left[1], right_eye_right[0], right_eye_right[1]],
+                      [left_eye_top[0], left_eye_top[1], left_eye_bottom[0], right_eye_bottom[0],
+                       left_eye_left[0], left_eye_left[1], left_eye_right[0], left_eye_right[1]]]
+        return result
 
 def main():
     cap = cv2.VideoCapture(0)
