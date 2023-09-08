@@ -124,7 +124,7 @@ class FaceMeshDetector:
             left_eye_right = left_eye_coords[0]
             result = [right_eye_top[0], right_eye_top[1], right_eye_bottom[0], right_eye_bottom[1],
                        right_eye_left[0], right_eye_left[1], right_eye_right[0], right_eye_right[1],
-                      left_eye_top[0], left_eye_top[1], left_eye_bottom[0], right_eye_bottom[0],
+                      left_eye_top[0], left_eye_top[1], left_eye_bottom[0], left_eye_bottom[1],
                        left_eye_left[0], left_eye_left[1], left_eye_right[0], left_eye_right[1]]
         return result
 

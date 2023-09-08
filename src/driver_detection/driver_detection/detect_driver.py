@@ -65,9 +65,12 @@ class DriverDetection(Node):
             eye_coordinates = Float32MultiArray()
             eye_coordinates.data = self.faceMeshDetector.getEyePosition(image_face)
             
-            # eye_top = (int(eye_coordinates.data[0]), int(eye_coordinates.data[1]))
-            # eye_bottom = (int(eye_coordinates.data[2]), int(eye_coordinates.data[3]))
-            # cv2.line(image_face, eye_top, eye_bottom, (0, 255, 0), 2)
+            right_eye_top = (int(eye_coordinates.data[0]), int(eye_coordinates.data[1]))
+            right_eye_bottom = (int(eye_coordinates.data[2]), int(eye_coordinates.data[3]))
+            left_eye_top = (int(eye_coordinates.data[8]), int(eye_coordinates.data[9]))
+            left_eye_bottom = (int(eye_coordinates.data[10]), int(eye_coordinates.data[11]))
+            cv2.line(image_face, right_eye_top, right_eye_bottom, (0, 255, 0), 2)
+            cv2.line(image_face, left_eye_top, left_eye_bottom, (0, 255, 0), 2)
 
             self.image_face_pub.publish(self.br.cv2_to_imgmsg(image_face))
             self.image_hand_pub.publish(self.br.cv2_to_imgmsg(image_hands))

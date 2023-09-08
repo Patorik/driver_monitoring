@@ -61,10 +61,12 @@ class Analyser(Node):
         left_horizontal_distance = self.distanceBetweenPoints(left_eye_left, left_eye_right)
         left_vertical_distance = self.distanceBetweenPoints(left_eye_top, left_eye_bottom)
         # Finding ratio of LEFT and Right Eyes
-        print(right_horizontal_distance)
         right_eye_ratio = right_horizontal_distance/right_vertical_distance
         left_eye_ratio = left_horizontal_distance/left_vertical_distance
         ratio = (right_eye_ratio+left_eye_ratio)/2
+
+        print(f"Left eye:{left_vertical_distance}")
+        print(f"Right eye:{right_vertical_distance}")
 
         if(ratio >= min_ratio):
             return True
