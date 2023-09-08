@@ -54,17 +54,17 @@ class Analyser(Node):
         left_eye_left = self.left_eye_coords[4:6]
         left_eye_right = self.left_eye_coords[6:8]
 
-        # Finding Distance Right Eye
-        rhDistance = self.distanceBetweenPoints(right_eye_left, right_eye_right)
-        rvDistance = self.distanceBetweenPoints(right_eye_top, right_eye_bottom)
-        # Finding Distance Left Eye
-        lvDistance = self.distanceBetweenPoints(left_eye_left, left_eye_right)
-        lhDistance = self.distanceBetweenPoints(left_eye_top, left_eye_bottom)
+        # Finding distances for right eye
+        right_horizontal_distance = self.distanceBetweenPoints(right_eye_left, right_eye_right)
+        right_vertical_distance = self.distanceBetweenPoints(right_eye_top, right_eye_bottom)
+        # Finding distances for left eye
+        left_horizontal_distance = self.distanceBetweenPoints(left_eye_left, left_eye_right)
+        left_vertical_distance = self.distanceBetweenPoints(left_eye_top, left_eye_bottom)
         # Finding ratio of LEFT and Right Eyes
-        reRatio = rhDistance/rvDistance
-        leRatio = lhDistance/lvDistance
-        ratio = (reRatio+leRatio)/2
-        print(ratio)
+        print(right_horizontal_distance)
+        right_eye_ratio = right_horizontal_distance/right_vertical_distance
+        left_eye_ratio = left_horizontal_distance/left_vertical_distance
+        ratio = (right_eye_ratio+left_eye_ratio)/2
 
         if(ratio >= min_ratio):
             return True
