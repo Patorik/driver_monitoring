@@ -5,6 +5,7 @@ from std_msgs.msg import Bool
 from std_msgs.msg import Float32MultiArray
 
 import math
+import numpy as np
 
 class Analyser(Node):
     def __init__(self):
@@ -16,33 +17,59 @@ class Analyser(Node):
 
         # Subscribers
         self.iris_coords_sub = self.create_subscription(Float32MultiArray, 'iris_coordinates', self.irisCoordsCallback, 1)
-        self.right_eye_keypoints_sub = self.create_subscription(Float32MultiArray, 'right_eye_keypoints_coords', self.rightEyeKeyPointsCallback, 1)
-        self.left_eye_keypoints_sub = self.create_subscription(Float32MultiArray, 'left_eye_keypoints_coords', self.leftEyeKeyPointsCallback, 1)
-        self.right_eye_closed_pub = self.create_publisher(Bool, 'right_eye_closed')
-        self.left_eye_closed_pub = self.create_publisher(Bool, 'left_eye_closed')
-        self.is_disturbed_pub = self.create_publisher(Bool, 'is_eye_disturbed')
-        self.is_sleeping_pub = self.create_publisher(Bool, 'is_sleeping')
+        self.eye_keypoints_sub = self.create_subscription(Float32MultiArray, 'eye_keypoints_coords', self.eyeKeyPointsCallback, 1)
+        self.right_eye_closed_pub = self.create_publisher(Bool, 'right_eye_closed', 1)
+        self.left_eye_closed_pub = self.create_publisher(Bool, 'left_eye_closed', 1)
+        self.is_disturbed_pub = self.create_publisher(Bool, 'is_eye_disturbed', 1)
+        self.is_sleeping_pub = self.create_publisher(Bool, 'is_sleeping', 1)
         
 
     def irisCoordsCallback(self, msg):
-        self.get_logger().info('I heard: "%s"' % msg.data)
+        """
+        Callback function for iris
+        """
+
+    def eyeKeyPointsCallback(self, msg):
+        """
+        Callback function for eye's keypoint
+        """
+        # self.get_logger().info('I heard: "%s"' % msg.data)
+        self.left_eye_coords = msg.data[8:16]
+        self.right_eye_coords = msg.data[0:8]
+        # print(f"Left eye:{self.left_eye_coords[0]}")
+        # print(f"Right eye:{self.right_eye_coords}")
+        print(self.detectBlink())
         
-    def rightEyeKeyPointsCallback(self, msg):
-        self.get_logger().info('I heard: "%s"' % msg.data)
-        self.right_eye_coords = msg.data
-    
-    def leftEyeKeyPointsCallback(self, msg):
-        self.get_logger().info('I heard: "%s"' % msg.data)
-        self.left_eye_coords = msg.data
 
-    def analyze(self):
-        self.detectBlink(self.left_eye_coords, self.right_eye_coords)
-        pass
-
-    def detectBlink(self, left_eye_coords, right_eye_coords):
+    def detectBlink(self, min_ratio=5.3):
         """
         Detects if the person is blinking. 
         """
+        right_eye_top = self.right_eye_coords[0:2]
+        right_eye_bottom = self.right_eye_coords[2:4]
+        right_eye_left = self.right_eye_coords[4:6]
+        right_eye_right = self.right_eye_coords[6:8]
+        left_eye_top = self.left_eye_coords[0:2]
+        left_eye_bottom = self.left_eye_coords[2:4]
+        left_eye_left = self.left_eye_coords[4:6]
+        left_eye_right = self.left_eye_coords[6:8]
+
+        # Finding Distance Right Eye
+        rhDistance = self.distanceBetweenPoints(right_eye_left, right_eye_right)
+        rvDistance = self.distanceBetweenPoints(right_eye_top, right_eye_bottom)
+        # Finding Distance Left Eye
+        lvDistance = self.distanceBetweenPoints(left_eye_left, left_eye_right)
+        lhDistance = self.distanceBetweenPoints(left_eye_top, left_eye_bottom)
+        # Finding ratio of LEFT and Right Eyes
+        reRatio = rhDistance/rvDistance
+        leRatio = lhDistance/lvDistance
+        ratio = (reRatio+leRatio)/2
+        print(ratio)
+
+        if(ratio >= min_ratio):
+            return True
+        else:
+            return False
         
         
     def estimateGazeDirection(self):
@@ -72,4 +99,7 @@ def main(args=None):
     rclpy.init(args=args)
 
     analyser = Analyser()
-    analyser.analyze()
+    rclpy.spin(analyser)
+
+if __name__ == '__main__':
+    main()

@@ -30,8 +30,7 @@ class DriverDetection(Node):
         self.image_pose_pub = self.create_publisher(Image, 'image_pose', 1)
         self.image_hand_pub = self.create_publisher(Image, 'image_hand', 1)
         self.iris_coords_pub = self.create_publisher(Float32MultiArray, 'iris_coordinates', 1)
-        self.iris_coords_pub = self.create_publisher(Float32MultiArray, 'right_eye_keypoints_coords', 1)
-        self.iris_coords_pub = self.create_publisher(Float32MultiArray, 'left_eye_keypoints_coords', 1)
+        self.eye_keypoints_pub = self.create_publisher(Float32MultiArray, 'eye_keypoints_coords', 1)
         self.br = CvBridge()
 
     def detect(self):
@@ -63,18 +62,19 @@ class DriverDetection(Node):
             iris_coordinates = Float32MultiArray()
             iris_coordinates.data = self.faceMeshDetector.getIrisPosition(image_iris)
             # print(self.faceMeshDetector.getIrisPosition(image_iris))
-            right_eye_coordinates = Float32MultiArray()
-            left_eye_coordinates = Float32MultiArray()
-
-            eye_coordinates_list = self.faceMeshDetector.getEyePosition(image_face)
-            right_eye_coordinates.data = eye_coordinates_list[0]
-            left_eye_coordinates.data = eye_coordinates_list[1]
+            eye_coordinates = Float32MultiArray()
+            eye_coordinates.data = self.faceMeshDetector.getEyePosition(image_face)
+            
+            # eye_top = (int(eye_coordinates.data[0]), int(eye_coordinates.data[1]))
+            # eye_bottom = (int(eye_coordinates.data[2]), int(eye_coordinates.data[3]))
+            # cv2.line(image_face, eye_top, eye_bottom, (0, 255, 0), 2)
 
             self.image_face_pub.publish(self.br.cv2_to_imgmsg(image_face))
             self.image_hand_pub.publish(self.br.cv2_to_imgmsg(image_hands))
             self.image_pose_pub.publish(self.br.cv2_to_imgmsg(image_pose))
             self.image_iris_pub.publish(self.br.cv2_to_imgmsg(image_iris))
             self.iris_coords_pub.publish(iris_coordinates)
+            self.eye_keypoints_pub.publish(eye_coordinates)
         
         self.cap.release()
         cv2.destroyAllWindows()
