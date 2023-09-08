@@ -38,13 +38,14 @@ class Analyser(Node):
         self.right_eye_coords = msg.data[0:8]
         # print(f"Left eye:{self.left_eye_coords[0]}")
         # print(f"Right eye:{self.right_eye_coords}")
-        print(self.detectBlink())
+        self.detectBlink()
         
 
-    def detectBlink(self, min_ratio=5.3):
+    def detectBlink(self, min_ratio=8.0):
         """
         Detects if the person is blinking. 
         """
+        # Initialize coordinates of parts of the eyes
         right_eye_top = self.right_eye_coords[0:2]
         right_eye_bottom = self.right_eye_coords[2:4]
         right_eye_left = self.right_eye_coords[4:6]
@@ -54,6 +55,9 @@ class Analyser(Node):
         left_eye_left = self.left_eye_coords[4:6]
         left_eye_right = self.left_eye_coords[6:8]
 
+        # Init published values
+        right_eye_closed = Bool()
+        left_eye_closed = Bool()
         # Finding distances for right eye
         right_horizontal_distance = self.distanceBetweenPoints(right_eye_left, right_eye_right)
         right_vertical_distance = self.distanceBetweenPoints(right_eye_top, right_eye_bottom)
@@ -63,16 +67,20 @@ class Analyser(Node):
         # Finding ratio of LEFT and Right Eyes
         right_eye_ratio = right_horizontal_distance/right_vertical_distance
         left_eye_ratio = left_horizontal_distance/left_vertical_distance
-        ratio = (right_eye_ratio+left_eye_ratio)/2
 
-        print(f"Left eye:{left_vertical_distance}")
-        print(f"Right eye:{right_vertical_distance}")
-
-        if(ratio >= min_ratio):
-            return True
+        print(f"Left eye:{left_eye_ratio}")
+        print(f"Right eye:{right_eye_ratio}")
+        if right_eye_ratio >= min_ratio:
+            right_eye_closed.data = True
         else:
-            return False
-        
+            right_eye_closed.data = False
+        if left_eye_ratio >= min_ratio:
+            left_eye_closed.data = True
+        else:
+            left_eye_closed.data = False
+
+        self.right_eye_closed_pub.publish(right_eye_closed)
+        self.left_eye_closed_pub.publish(left_eye_closed)
         
     def estimateGazeDirection(self):
         """
