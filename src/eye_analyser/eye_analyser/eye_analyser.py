@@ -14,6 +14,8 @@ class Analyser(Node):
         # Variables
         self.right_eye_coords = []
         self.left_eye_coords = []
+        self.right_eye_closed = Bool()
+        self.left_eye_closed = Bool()
 
         # Subscribers
         self.iris_coords_sub = self.create_subscription(Float32MultiArray, 'iris_coordinates', self.irisCoordsCallback, 1)
@@ -55,9 +57,6 @@ class Analyser(Node):
         left_eye_left = self.left_eye_coords[4:6]
         left_eye_right = self.left_eye_coords[6:8]
 
-        # Init published values
-        right_eye_closed = Bool()
-        left_eye_closed = Bool()
         # Finding distances for right eye
         right_horizontal_distance = self.distanceBetweenPoints(right_eye_left, right_eye_right)
         right_vertical_distance = self.distanceBetweenPoints(right_eye_top, right_eye_bottom)
@@ -71,16 +70,16 @@ class Analyser(Node):
         print(f"Left eye:{left_eye_ratio}")
         print(f"Right eye:{right_eye_ratio}")
         if right_eye_ratio >= min_ratio:
-            right_eye_closed.data = True
+            self.right_eye_closed.data = True
         else:
-            right_eye_closed.data = False
+            self.right_eye_closed.data = False
         if left_eye_ratio >= min_ratio:
-            left_eye_closed.data = True
+            self.left_eye_closed.data = True
         else:
-            left_eye_closed.data = False
+            self.left_eye_closed.data = False
 
-        self.right_eye_closed_pub.publish(right_eye_closed)
-        self.left_eye_closed_pub.publish(left_eye_closed)
+        self.right_eye_closed_pub.publish(self.right_eye_closed)
+        self.left_eye_closed_pub.publish(self.left_eye_closed)
         
     def estimateGazeDirection(self):
         """
