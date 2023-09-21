@@ -14,6 +14,16 @@ class Analyser(Node):
         # Variables
         self.right_eye_coords = []
         self.left_eye_coords = []
+        self.blink_count_left_eye = 0
+        self.blink_count_right_eye = 0
+        self.blink_count_both = 0
+        self.both_eye_closed = False
+        self.count_closed_left_eye_frames = 0
+        self.count_closed_right_eye_frames = 0
+        self.count_closed_both_eyes_frames = 0
+
+        self.min_frames_if_disturbed = 10
+        self.min_frames_if_sleeping = 20
 
         # Subscribers
         self.iris_coords_sub = self.create_subscription(Float32MultiArray, 'iris_coordinates', self.irisCoordsCallback, 1)
@@ -39,7 +49,8 @@ class Analyser(Node):
         # print(f"Left eye:{self.left_eye_coords[0]}")
         # print(f"Right eye:{self.right_eye_coords}")
         self.detectBlink()
-        
+        self.detectDisturbedEye()
+        self.detectSleep(self.count_closed_both_eyes_frames)
 
     def detectBlink(self, min_ratio=8.0):
         """
@@ -68,16 +79,45 @@ class Analyser(Node):
         right_eye_ratio = right_horizontal_distance/right_vertical_distance
         left_eye_ratio = left_horizontal_distance/left_vertical_distance
 
-        print(f"Left eye:{left_eye_ratio}")
-        print(f"Right eye:{right_eye_ratio}")
+        # print(f"Left eye:{left_eye_ratio}")
+        # print(f"Right eye:{right_eye_ratio}")
+
+        # Counting blinks for right eye
         if right_eye_ratio >= min_ratio:
             right_eye_closed.data = True
         else:
+            if right_eye_closed.data == True:
+                self.blink_count_right_eye += 1
             right_eye_closed.data = False
+        # Counting blinks for left eye
         if left_eye_ratio >= min_ratio:
             left_eye_closed.data = True
         else:
+            if left_eye_closed.data == True:
+                self.blink_count_left_eye += 1
             left_eye_closed.data = False
+
+        # Detecting if one of the eyes are closed
+        if left_eye_closed.data:
+            self.count_closed_left_eye_frames += 1
+        else:
+            self.count_closed_left_eye_frames = 0
+
+        if right_eye_closed.data:
+            self.count_closed_right_eye_frames += 1
+        else:
+            self.count_closed_right_eye_frames = 0
+
+        # Detecting if both eyes closed
+        if left_eye_closed.data and right_eye_closed.data:
+            if self.both_eye_closed:
+                self.count_closed_both_eyes_frames +=1
+            self.both_eye_closed = True
+        else:
+            if self.both_eye_closed:
+                self.blink_count_both +=1
+            self.count_closed_both_eyes_frames = 0
+            self.both_eye_closed = False
 
         self.right_eye_closed_pub.publish(right_eye_closed)
         self.left_eye_closed_pub.publish(left_eye_closed)
@@ -87,15 +127,28 @@ class Analyser(Node):
         Estimate where the analyzed person is looking at.
         """
 
-    def detectDisturbedEye(self):
+    def detectDisturbedEye(self, target_eye, count_closed_both_eyes_frames, min_frames_if_sleeping=10):
         """
         Detects if an eye is disturbed based on blinking time.
         """
+        is_disturbed = Bool()
+        if count_closed_both_eyes_frames >= min_frames_if_sleeping:
+            is_disturbed.data = True
+        else:
+            is_disturbed.data = False
+        self.is_disturbed_pub.publish(is_disturbed)
 
-    def detectSleep(self):
+    def detectSleep(self, count_closed_both_eyes_frames, min_frames_if_sleeping=30):
         """
         Detects if the person is sleeping based on blinking time.
         """
+        is_sleeping = Bool()
+        if count_closed_both_eyes_frames >= min_frames_if_sleeping:
+            is_sleeping.data = True
+        else:
+            is_sleeping.data = False
+        self.is_sleeping_pub.publish(is_sleeping)
+
 
     def distanceBetweenPoints(self, point_a, point_b):
         """
