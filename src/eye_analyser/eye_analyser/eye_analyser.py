@@ -24,6 +24,8 @@ class Analyser(Node):
 
         self.min_frames_if_disturbed = 10
         self.min_frames_if_sleeping = 20
+        self.right_eye_closed = Bool()
+        self.left_eye_closed = Bool()
 
         # Subscribers
         self.iris_coords_sub = self.create_subscription(Float32MultiArray, 'iris_coordinates', self.irisCoordsCallback, 1)
@@ -66,9 +68,6 @@ class Analyser(Node):
         left_eye_left = self.left_eye_coords[4:6]
         left_eye_right = self.left_eye_coords[6:8]
 
-        # Init published values
-        right_eye_closed = Bool()
-        left_eye_closed = Bool()
         # Finding distances for right eye
         right_horizontal_distance = self.distanceBetweenPoints(right_eye_left, right_eye_right)
         right_vertical_distance = self.distanceBetweenPoints(right_eye_top, right_eye_bottom)
@@ -84,32 +83,32 @@ class Analyser(Node):
 
         # Counting blinks for right eye
         if right_eye_ratio >= min_ratio:
-            right_eye_closed.data = True
+            self.right_eye_closed.data = True
         else:
-            if right_eye_closed.data == True:
+            if self.right_eye_closed.data == True:
                 self.blink_count_right_eye += 1
-            right_eye_closed.data = False
+            self.right_eye_closed.data = False
         # Counting blinks for left eye
         if left_eye_ratio >= min_ratio:
-            left_eye_closed.data = True
+            self.left_eye_closed.data = True
         else:
-            if left_eye_closed.data == True:
+            if self.left_eye_closed.data == True:
                 self.blink_count_left_eye += 1
-            left_eye_closed.data = False
+            self.left_eye_closed.data = False
 
         # Detecting if one of the eyes are closed
-        if left_eye_closed.data:
+        if self.left_eye_closed.data:
             self.count_closed_left_eye_frames += 1
         else:
             self.count_closed_left_eye_frames = 0
 
-        if right_eye_closed.data:
+        if self.right_eye_closed.data:
             self.count_closed_right_eye_frames += 1
         else:
             self.count_closed_right_eye_frames = 0
 
         # Detecting if both eyes closed
-        if left_eye_closed.data and right_eye_closed.data:
+        if self.left_eye_closed.data and self.right_eye_closed.data:
             if self.both_eye_closed:
                 self.count_closed_both_eyes_frames +=1
             self.both_eye_closed = True
@@ -119,8 +118,8 @@ class Analyser(Node):
             self.count_closed_both_eyes_frames = 0
             self.both_eye_closed = False
 
-        self.right_eye_closed_pub.publish(right_eye_closed)
-        self.left_eye_closed_pub.publish(left_eye_closed)
+        self.right_eye_closed_pub.publish(self.right_eye_closed)
+        self.left_eye_closed_pub.publish(self.left_eye_closed)
         
     def estimateGazeDirection(self):
         """
