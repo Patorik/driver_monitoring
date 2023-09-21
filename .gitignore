@@ -4,5 +4,5 @@
 **/__pycache__/*
 **/test/**
 
-src/driver_detection/resource/driver_detection
-src/eye_analyser/resource/eye_analyser
+# src/driver_detection/resource/driver_detection
+# src/eye_analyser/resource/eye_analyser
