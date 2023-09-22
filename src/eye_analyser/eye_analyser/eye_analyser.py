@@ -17,7 +17,7 @@ class Analyser(Node):
         self.blink_count_left_eye = 0
         self.blink_count_right_eye = 0
         self.blink_count_both = 0
-        self.both_eye_closed = False
+        self.both_eyes_closed = False
         self.count_closed_left_eye_frames = 0
         self.count_closed_right_eye_frames = 0
         self.count_closed_both_eyes_frames = 0
@@ -26,6 +26,8 @@ class Analyser(Node):
         self.min_frames_if_sleeping = 20
         self.right_eye_closed = Bool()
         self.left_eye_closed = Bool()
+        self.is_disturbed = Bool()
+        self.is_sleeping = Bool()
 
         # Subscribers
         self.iris_coords_sub = self.create_subscription(Float32MultiArray, 'iris_coordinates', self.irisCoordsCallback, 1)
@@ -51,10 +53,11 @@ class Analyser(Node):
         # print(f"Left eye:{self.left_eye_coords[0]}")
         # print(f"Right eye:{self.right_eye_coords}")
         self.detectBlink()
-        self.detectDisturbedEye()
-        self.detectSleep(self.count_closed_both_eyes_frames)
+        # self.detectDisturbedEye(self.count_closed_left_eye_frames)
+        self.detectDisturbedEye(self.count_closed_left_eye_frames, self.count_closed_right_eye_frames)
+        self.detectSleep()
 
-    def detectBlink(self, min_ratio=8.0):
+    def detectBlink(self, min_ratio=5.0):
         """
         Detects if the person is blinking. 
         """
@@ -109,14 +112,14 @@ class Analyser(Node):
 
         # Detecting if both eyes closed
         if self.left_eye_closed.data and self.right_eye_closed.data:
-            if self.both_eye_closed:
+            if self.both_eyes_closed:
                 self.count_closed_both_eyes_frames +=1
-            self.both_eye_closed = True
+            self.both_eyes_closed = True
         else:
-            if self.both_eye_closed:
+            if self.both_eyes_closed:
                 self.blink_count_both +=1
             self.count_closed_both_eyes_frames = 0
-            self.both_eye_closed = False
+            self.both_eyes_closed = False
 
         self.right_eye_closed_pub.publish(self.right_eye_closed)
         self.left_eye_closed_pub.publish(self.left_eye_closed)
@@ -126,27 +129,29 @@ class Analyser(Node):
         Estimate where the analyzed person is looking at.
         """
 
-    def detectDisturbedEye(self, target_eye, count_closed_both_eyes_frames, min_frames_if_sleeping=10):
+    def detectDisturbedEye(self, count_close_left_eye_frames, count_closed_right_eye_frames, min_frames_if_disturbed=10):
         """
         Detects if an eye is disturbed based on blinking time.
         """
-        is_disturbed = Bool()
-        if count_closed_both_eyes_frames >= min_frames_if_sleeping:
-            is_disturbed.data = True
+        if self.both_eyes_closed and not self.is_sleeping.data:
+            if self.count_closed_both_eyes_frames >= min_frames_if_disturbed:
+                self.is_disturbed.data = True
         else:
-            is_disturbed.data = False
-        self.is_disturbed_pub.publish(is_disturbed)
+            if (count_closed_right_eye_frames >= min_frames_if_disturbed and not count_close_left_eye_frames >= min_frames_if_disturbed) or (count_close_left_eye_frames >= min_frames_if_disturbed and not count_closed_right_eye_frames >= min_frames_if_disturbed):
+                self.is_disturbed.data = True
+            else:
+                self.is_disturbed.data = False
+        self.is_disturbed_pub.publish(self.is_disturbed)
 
-    def detectSleep(self, count_closed_both_eyes_frames, min_frames_if_sleeping=30):
+    def detectSleep(self, min_frames_if_sleeping=30):
         """
         Detects if the person is sleeping based on blinking time.
         """
-        is_sleeping = Bool()
-        if count_closed_both_eyes_frames >= min_frames_if_sleeping:
-            is_sleeping.data = True
+        if self.count_closed_both_eyes_frames >= min_frames_if_sleeping:
+            self.is_sleeping.data = True
         else:
-            is_sleeping.data = False
-        self.is_sleeping_pub.publish(is_sleeping)
+            self.is_sleeping.data = False
+        self.is_sleeping_pub.publish(self.is_sleeping)
 
 
     def distanceBetweenPoints(self, point_a, point_b):
