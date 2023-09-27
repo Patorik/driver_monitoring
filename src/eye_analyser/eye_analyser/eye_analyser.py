@@ -137,10 +137,8 @@ class Analyser(Node):
             if self.count_closed_both_eyes_frames >= min_frames_if_disturbed:
                 self.is_disturbed.data = True
         else:
-            if (count_closed_right_eye_frames >= min_frames_if_disturbed and not count_close_left_eye_frames >= min_frames_if_disturbed) or (count_close_left_eye_frames >= min_frames_if_disturbed and not count_closed_right_eye_frames >= min_frames_if_disturbed):
+            if count_closed_right_eye_frames >= min_frames_if_disturbed or count_close_left_eye_frames >= min_frames_if_disturbed:
                 self.is_disturbed.data = True
-            else:
-                self.is_disturbed.data = False
         self.is_disturbed_pub.publish(self.is_disturbed)
 
     def detectSleep(self, min_frames_if_sleeping=30):
@@ -152,7 +150,6 @@ class Analyser(Node):
         else:
             self.is_sleeping.data = False
         self.is_sleeping_pub.publish(self.is_sleeping)
-
 
     def distanceBetweenPoints(self, point_a, point_b):
         """
