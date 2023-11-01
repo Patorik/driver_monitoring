@@ -7,6 +7,7 @@ from rclpy.node import Node
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import Int32MultiArray
 
 from .PoseEstimationModule import PoseDetector
 from .FaceMeshDetector import FaceMeshDetector
@@ -18,13 +19,14 @@ class DriverDetection(Node):
     def __init__(self):
         super().__init__('driver_detector')
         self.cap = cv2.VideoCapture(0)
+        self.resolution = [1280, 720]
 
         self.poseDetector = PoseDetector()
         self.faceMeshDetector = FaceMeshDetector()
         self.handDetector = HandDetector()
 
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.resolution[0])
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.resolution[1])
         self.image_face_pub = self.create_publisher(Image, 'image_face', 1)
         self.image_iris_pub = self.create_publisher(Image, 'image_iris', 1)
         self.image_pose_pub = self.create_publisher(Image, 'image_pose', 1)
@@ -32,6 +34,7 @@ class DriverDetection(Node):
         self.iris_coords_pub = self.create_publisher(Float32MultiArray, 'iris_coordinates', 1)
         self.eye_keypoints_pub = self.create_publisher(Float32MultiArray, 'eye_keypoints_coords', 1)
         self.gaze_keypoints_pub = self.create_publisher(Float32MultiArray, 'gaze_keypoints_coords', 1)
+        self.camera_resolution_pub = self.create_publisher(Int32MultiArray, 'camera_resolution', 1)
         self.br = CvBridge()
 
     def detect(self):
@@ -65,15 +68,26 @@ class DriverDetection(Node):
             # print(self.faceMeshDetector.getIrisPosition(image_iris))
             face_keypoint_coordinates = Float32MultiArray()
             face_data = self.faceMeshDetector.getFaceKeypointPositions(image_face)
-            if len(face_data) == 12:
+            if len(face_data) == 28:
                 face_keypoint_coordinates.data = self.faceMeshDetector.getFaceKeypointPositions(image_face)
-                cv2.circle(image_face, (int(face_data[0]),int(face_data[1])), 5, (0, 100, 255), -1)
-                cv2.circle(image_face, (int(face_data[2]),int(face_data[3])), 5, (0, 100, 255), -1)
-                cv2.circle(image_face, (int(face_data[4]),int(face_data[5])), 5, (0, 100, 255), -1)
-                cv2.circle(image_face, (int(face_data[6]),int(face_data[7])), 5, (0, 100, 255), -1)
-                cv2.circle(image_face, (int(face_data[8]),int(face_data[9])), 5, (0, 100, 255), -1)
-                cv2.circle(image_face, (int(face_data[10]),int(face_data[11])), 5, (0, 100, 255), -1)
-                cv2.imshow("image", image_face)
+                face_keypoint_coordinates.data.append(iris_coordinates.data[0])
+                face_keypoint_coordinates.data.append(iris_coordinates.data[1])
+                face_keypoint_coordinates.data.append(iris_coordinates.data[2])
+                face_keypoint_coordinates.data.append(iris_coordinates.data[3])
+                cv2.circle(image_face, (int(face_data[0]),int(face_data[1])), 5, (0, 255, 0), -1)
+                cv2.circle(image_face, (int(face_data[2]),int(face_data[3])), 5, (0, 255, 0), -1)
+                cv2.circle(image_face, (int(face_data[4]),int(face_data[5])), 5, (0, 255, 0), -1)
+                cv2.circle(image_face, (int(face_data[6]),int(face_data[7])), 5, (0, 255, 0), -1)
+                cv2.circle(image_face, (int(face_data[8]),int(face_data[9])), 5, (0, 255, 0), -1)
+                cv2.circle(image_face, (int(face_data[10]),int(face_data[11])), 5, (0, 255, 0), -1)
+                cv2.circle(image_face, (int(face_data[12]),int(face_data[13])), 5, (0, 255, 0), -1)
+                cv2.circle(image_face, (int(face_data[14]),int(face_data[15])), 5, (0, 255, 0), -1)
+                cv2.circle(image_face, (int(face_data[16]),int(face_data[17])), 5, (0, 255, 0), -1)
+                cv2.circle(image_face, (int(face_data[18]),int(face_data[19])), 5, (0, 255, 0), -1)
+                cv2.circle(image_face, (int(face_data[20]),int(face_data[21])), 5, (0, 255, 0), -1)
+                cv2.circle(image_face, (int(face_data[22]),int(face_data[23])), 5, (0, 255, 0), -1)
+                cv2.circle(image_face, (int(face_data[24]),int(face_data[25])), 5, (0, 255, 0), -1)
+                cv2.circle(image_face, (int(face_data[26]),int(face_data[27])), 5, (0, 255, 0), -1)
             
             eye_coordinates = Float32MultiArray()
             eye_data = self.faceMeshDetector.getEyePosition(image_face)
@@ -93,6 +107,10 @@ class DriverDetection(Node):
             self.iris_coords_pub.publish(iris_coordinates)
             self.eye_keypoints_pub.publish(eye_coordinates)
             self.gaze_keypoints_pub.publish(face_keypoint_coordinates)
+
+            camera_resolution = Int32MultiArray()
+            camera_resolution.data = self.resolution
+            self.camera_resolution_pub.publish(camera_resolution)
         
         self.cap.release()
         cv2.destroyAllWindows()

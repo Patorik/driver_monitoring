@@ -98,13 +98,13 @@ class FaceMeshDetector:
             for faceLms in self.irisLM.multi_face_landmarks:
                 right_iris = faceLms.landmark[RIGHT_IRIS[0]:RIGHT_IRIS[len(RIGHT_IRIS)-1]+1]
                 right_iris_center_x, right_iris_center_y = self.normalizeIrisToPixelCoordinates(right_iris, [image_width, image_height])
-                print(f"Right eye:\n x: {int(right_iris_center_x)}, y: {int(right_iris_center_y)}")
+                # print(f"Right eye:\n x: {int(right_iris_center_x)}, y: {int(right_iris_center_y)}")
                 
                 left_iris = faceLms.landmark[LEFT_IRIS[0]:LEFT_IRIS[len(LEFT_IRIS)-1]+1]
                 left_iris_center_x, left_iris_center_y = self.normalizeIrisToPixelCoordinates(left_iris, [image_width, image_height])
                 # print(f"Left eye:\n x: {int(left_iris_center_x)}, y: {int(left_iris_center_y)}")
 
-            return [right_iris_center_x, right_iris_center_y, left_iris_center_x, left_iris_center_y]
+            return [left_iris_center_x, left_iris_center_y, right_iris_center_x, right_iris_center_y]
         return [0.0, 0.0, 0.0, 0.0]
     
     def getFaceKeypointPositions(self, img):
@@ -118,9 +118,21 @@ class FaceMeshDetector:
             right_eye_corner = mesh_coords[263]
             left_mouth_corner = mesh_coords[61]
             right_mouth_corner = mesh_coords[291]
-            left_eye_out = mesh_coords
+            left_eye_left = mesh_coords[243]
+            left_eye_right = mesh_coords[130]
+            left_eye_bottom = mesh_coords[23]
+            left_eye_top = mesh_coords[27]
+            right_eye_right = mesh_coords[359]
+            right_eye_left = mesh_coords[463]
+            right_eye_bottom = mesh_coords[253]
+            right_eye_top = mesh_coords[257]
             result = [nose[0], nose[1], chin[0], chin[1], left_eye_corner[0], left_eye_corner[1], right_eye_corner[0], right_eye_corner[1],
-                      left_mouth_corner[0], left_mouth_corner[1], right_mouth_corner[0], right_mouth_corner[1]]
+                      left_mouth_corner[0], left_mouth_corner[1], right_mouth_corner[0], right_mouth_corner[1],
+                      left_eye_left[0], left_eye_left[1], left_eye_right[0], left_eye_right[1],
+                      left_eye_bottom[0], left_eye_bottom[1], left_eye_top[0], left_eye_top[1],
+                      right_eye_left[0], right_eye_left[1], right_eye_right[0], right_eye_right[1],
+                      right_eye_bottom[0], right_eye_bottom[1], right_eye_top[0], right_eye_top[1]
+                      ]
         return result
     
     def getEyePosition(self, img):
