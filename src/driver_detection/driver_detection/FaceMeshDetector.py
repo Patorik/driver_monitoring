@@ -74,7 +74,7 @@ class FaceMeshDetector:
 
     def normalizeToPixelCoordinates(self, img, results):
         image_height, image_width= img.shape[:2]
-        mesh_coord = [(int(point.x * image_width), int(point.y * image_height)) for point in results.multi_face_landmarks[0].landmark]
+        mesh_coord = [(point.x * image_width, point.y * image_height) for point in results.multi_face_landmarks[0].landmark]
         return mesh_coord
     
     def normalizeEyesToPixelCoordinates(self, img, results):
@@ -106,6 +106,21 @@ class FaceMeshDetector:
         
             return [right_iris_center_x, right_iris_center_y, left_iris_center_x, left_iris_center_y]
         return [0.0, 0.0, 0.0, 0.0]
+    
+    def getFaceKeypointPositions(self, img):
+        res_img = img.copy()
+        result = []
+        if self.faceMeshLM.multi_face_landmarks:
+            mesh_coords = self.normalizeToPixelCoordinates(res_img, self.faceMeshLM)
+            nose = mesh_coords[1]
+            chin = mesh_coords[199]
+            left_eye_corner = mesh_coords[33]
+            right_eye_corner = mesh_coords[263]
+            left_mouth_corner = mesh_coords[61]
+            right_mouth_corner = mesh_coords[291]
+            result = [nose[0], nose[1], chin[0], chin[1], left_eye_corner[0], left_eye_corner[1], right_eye_corner[0], right_eye_corner[1],
+                      left_mouth_corner[0], left_mouth_corner[1], right_mouth_corner[0], right_mouth_corner[1]]
+        return result
     
     def getEyePosition(self, img):
         res_img = img.copy()

@@ -31,6 +31,7 @@ class DriverDetection(Node):
         self.image_hand_pub = self.create_publisher(Image, 'image_hand', 1)
         self.iris_coords_pub = self.create_publisher(Float32MultiArray, 'iris_coordinates', 1)
         self.eye_keypoints_pub = self.create_publisher(Float32MultiArray, 'eye_keypoints_coords', 1)
+        self.gaze_keypoints_pub = self.create_publisher(Float32MultiArray, 'gaze_keypoints_coords', 1)
         self.br = CvBridge()
 
     def detect(self):
@@ -62,6 +63,17 @@ class DriverDetection(Node):
             iris_coordinates = Float32MultiArray()
             iris_coordinates.data = self.faceMeshDetector.getIrisPosition(image_iris)
             # print(self.faceMeshDetector.getIrisPosition(image_iris))
+            face_keypoint_coordinates = Float32MultiArray()
+            face_data = self.faceMeshDetector.getFaceKeypointPositions(image_face)
+            if len(face_data) == 12:
+                face_keypoint_coordinates.data = self.faceMeshDetector.getFaceKeypointPositions(image_face)
+                cv2.circle(image_face, (int(face_data[0]),int(face_data[1])), 5, (0, 100, 255), -1)
+                cv2.circle(image_face, (int(face_data[2]),int(face_data[3])), 5, (0, 100, 255), -1)
+                cv2.circle(image_face, (int(face_data[4]),int(face_data[5])), 5, (0, 100, 255), -1)
+                cv2.circle(image_face, (int(face_data[6]),int(face_data[7])), 5, (0, 100, 255), -1)
+                cv2.circle(image_face, (int(face_data[8]),int(face_data[9])), 5, (0, 100, 255), -1)
+                cv2.circle(image_face, (int(face_data[10]),int(face_data[11])), 5, (0, 100, 255), -1)
+            
             eye_coordinates = Float32MultiArray()
             eye_data = self.faceMeshDetector.getEyePosition(image_face)
             if len(eye_data) == 16:
@@ -79,6 +91,7 @@ class DriverDetection(Node):
             self.image_iris_pub.publish(self.br.cv2_to_imgmsg(image_iris))
             self.iris_coords_pub.publish(iris_coordinates)
             self.eye_keypoints_pub.publish(eye_coordinates)
+            self.gaze_keypoints_pub.publish(face_keypoint_coordinates)
         
         self.cap.release()
         cv2.destroyAllWindows()
