@@ -73,6 +73,7 @@ class DriverDetection(Node):
                 cv2.circle(image_face, (int(face_data[6]),int(face_data[7])), 5, (0, 100, 255), -1)
                 cv2.circle(image_face, (int(face_data[8]),int(face_data[9])), 5, (0, 100, 255), -1)
                 cv2.circle(image_face, (int(face_data[10]),int(face_data[11])), 5, (0, 100, 255), -1)
+                cv2.imshow("image", image_face)
             
             eye_coordinates = Float32MultiArray()
             eye_data = self.faceMeshDetector.getEyePosition(image_face)

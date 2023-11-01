@@ -63,13 +63,13 @@ class FaceMeshDetector:
         return result_img
 
     def normalizeIrisToPixelCoordinates(self, iris_point, image_shape):
-        iris_center_x = 0.0        
+        iris_center_x = 0.0
         iris_center_y = 0.0
         for landmark in iris_point:
             iris_center_x = iris_center_x + landmark.x
             iris_center_y = iris_center_y + landmark.y
-        iris_center_x = iris_center_x/4 * image_shape[0]
-        iris_center_y = iris_center_y/4 * image_shape[1]
+        iris_center_x = iris_center_x * image_shape[0]/len(iris_point)
+        iris_center_y = iris_center_y * image_shape[1]/len(iris_point)
         return [iris_center_x, iris_center_y]
 
     def normalizeToPixelCoordinates(self, img, results):
@@ -96,14 +96,14 @@ class FaceMeshDetector:
         image_height, image_width = img.shape[:2]
         if self.irisLM.multi_face_landmarks:
             for faceLms in self.irisLM.multi_face_landmarks:
-                right_iris = faceLms.landmark[RIGHT_IRIS[0]:RIGHT_IRIS[len(RIGHT_IRIS)-1]]
-                right_iris_center_x, right_iris_center_y = self.normalizeIrisToPixelCoordinates(right_iris, [image_height, image_width])
-                # print(f"Right eye:\n x: {int(right_iris_center_x)}, y: {int(right_iris_center_y)}")
+                right_iris = faceLms.landmark[RIGHT_IRIS[0]:RIGHT_IRIS[len(RIGHT_IRIS)-1]+1]
+                right_iris_center_x, right_iris_center_y = self.normalizeIrisToPixelCoordinates(right_iris, [image_width, image_height])
+                print(f"Right eye:\n x: {int(right_iris_center_x)}, y: {int(right_iris_center_y)}")
                 
-                left_iris = faceLms.landmark[LEFT_IRIS[0]:LEFT_IRIS[len(LEFT_IRIS)-1]]
-                left_iris_center_x, left_iris_center_y = self.normalizeIrisToPixelCoordinates(left_iris, [image_height, image_width])
+                left_iris = faceLms.landmark[LEFT_IRIS[0]:LEFT_IRIS[len(LEFT_IRIS)-1]+1]
+                left_iris_center_x, left_iris_center_y = self.normalizeIrisToPixelCoordinates(left_iris, [image_width, image_height])
                 # print(f"Left eye:\n x: {int(left_iris_center_x)}, y: {int(left_iris_center_y)}")
-        
+
             return [right_iris_center_x, right_iris_center_y, left_iris_center_x, left_iris_center_y]
         return [0.0, 0.0, 0.0, 0.0]
     
@@ -118,6 +118,7 @@ class FaceMeshDetector:
             right_eye_corner = mesh_coords[263]
             left_mouth_corner = mesh_coords[61]
             right_mouth_corner = mesh_coords[291]
+            left_eye_out = mesh_coords
             result = [nose[0], nose[1], chin[0], chin[1], left_eye_corner[0], left_eye_corner[1], right_eye_corner[0], right_eye_corner[1],
                       left_mouth_corner[0], left_mouth_corner[1], right_mouth_corner[0], right_mouth_corner[1]]
         return result
