@@ -47,6 +47,8 @@ class GazeTracker(Node):
         self.reye_3d[:,2] += 135
 
         self.face_keypoints_sub = self.create_subscription(Float32MultiArray, 'gaze_keypoints_coords', self.gazeKeypointsCallback, 1)
+        self.face_direction_vertical = self.create_publisher(String, 'face_direction_vertical', 1)
+        self.face_direction_horizontal = self.create_publisher(String, 'face_direction_horizontal', 1)
 
     def gazeKeypointsCallback(self, msg):
         """
@@ -143,7 +145,6 @@ class GazeTracker(Node):
         l_rmat, _ = cv2.Rodrigues(l_rvec)
         r_rmat, _ = cv2.Rodrigues(r_rvec)
 
-
         # [0] changes pitch
         # [1] changes roll
         # [2] changes yaw
@@ -175,6 +176,66 @@ class GazeTracker(Node):
         r_axis, _ = cv2.projectPoints(axis, r_rvec, r_tvec, cam_matrix, dist_coeffs)
         r_gaze_axis, _ = cv2.projectPoints(axis, r_gaze_rvec, r_tvec, cam_matrix, dist_coeffs)
 
+        r_corner_end = np.ravel(r_axis[2]).astype(np.int32)
+        r_distance_x = math.sqrt((r_corner_end[0] - r_corner[0])**2)
+        r_distance_y = math.sqrt((r_corner_end[1] - r_corner[1])**2)
+        r_pixels = (r_corner_end[0] - r_corner[0]), (r_corner_end[1] - r_corner[1])
+        
+        r_direction = []
+
+        if r_pixels[0]>0:
+            r_direction.append("LEFT")
+        else:
+            r_direction.append("RIGHT")
+
+        if r_pixels[1]<0:
+            r_direction.append("UP")
+        else:
+            r_direction.append("DOWN")
+
+        l_corner_end = np.ravel(l_axis[2]).astype(np.int32)
+        l_distance_x = math.sqrt((l_corner_end[0] - l_corner[0])**2)
+        l_distance_y = math.sqrt((l_corner_end[1] - l_corner[1])**2)
+        l_pixels = (l_corner_end[0] - l_corner[0]), (l_corner_end[1] - l_corner[1])
+
+        l_direction = []
+
+        if l_pixels[0]>0:
+            l_direction.append("LEFT")
+        else:
+            l_direction.append("RIGHT")
+
+        if l_pixels[1]<0:
+            l_direction.append("UP")
+        else:
+            l_direction.append("DOWN")
+        
+        result_direction = []
+        if l_distance_x > 50 or r_distance_x > 50:
+            if l_direction[0] == "LEFT" and r_direction[0] == "LEFT":
+                result_direction.append("LEFT")
+            elif r_direction[0] == "RIGHT" and r_direction[0] == "RIGHT":
+                result_direction.append("RIGHT")
+        else:
+            result_direction.append("MIDDLE")
+            
+        if l_distance_y > 30 or r_distance_y > 30:
+            if l_direction[1] == "UP" and r_direction[1] == "UP":
+                result_direction.append("UP")
+            elif r_direction[1] == "DOWN" and r_direction[1] == "DOWN":
+                result_direction.append("DOWN")
+        else:
+            result_direction.append("MIDDLE")
+
+        result_horizontal_publish = String()
+        result_vertical_publish = String()
+        result_horizontal_publish.data = result_direction[0]
+        result_vertical_publish.data = result_direction[1]
+
+        if len(result_direction) == 2:
+            self.face_direction_horizontal.publish(result_horizontal_publish)
+            self.face_direction_vertical.publish(result_vertical_publish)
+        
 
 def main(args=None):
     rclpy.init(args=args)
