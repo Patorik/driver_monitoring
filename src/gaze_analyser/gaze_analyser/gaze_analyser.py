@@ -104,28 +104,28 @@ class GazeTracker(Node):
             lx_score = (left_iris[0] - left_eye_right[0]) / (left_eye_left[0] - left_eye_right[0])
             if abs(lx_score - self.last_lx) < self.threshold:
                 lx_score = (lx_score + self.last_lx) / 2
-            last_lx = lx_score
+            self.last_lx = lx_score
 
         # Calculate left y gaze score
         if (left_eye_bottom[1] - left_eye_top[1]) != 0:
             ly_score = (left_iris[1] - left_eye_top[1]) / (left_eye_bottom[1] - left_eye_top[1])
             if abs(ly_score - self.last_ly) < self.threshold:
                 ly_score = (ly_score + self.last_ly) / 2
-            last_ly = ly_score
+            self.last_ly = ly_score
         
         # Calculate right x gaze score
         if (right_eye_right[0] - right_eye_left[0]) != 0:
             rx_score = (right_iris[0] - right_eye_left[0]) / (right_eye_right[0] - right_eye_left[0])
             if abs(rx_score - self.last_rx) < self.threshold:
                 rx_score = (rx_score + self.last_rx) / 2
-            last_rx = rx_score
+            self.last_rx = rx_score
 
         # Calculate right y gaze score
         if (right_eye_bottom[1] - right_eye_top[1]) != 0:
             ry_score = (right_iris[1] - right_eye_bottom[1]) / (right_eye_bottom[1] - right_eye_top[1])
             if abs(ry_score - self.last_ry) < self.threshold:
                 ry_score = (ry_score + self.last_ry) / 2
-            last_ry = ry_score
+            self.last_ry = ry_score
 
         # The camera matrix
         focal_length = 1 * self.resolution[0]
