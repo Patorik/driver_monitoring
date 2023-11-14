@@ -140,16 +140,6 @@ class GazeTracker(Node):
         _, l_rvec, l_tvec = cv2.solvePnP(self.leye_3d, face_2d_head, cam_matrix, dist_coeffs, flags=cv2.SOLVEPNP_ITERATIVE)
         _, r_rvec, r_tvec = cv2.solvePnP(self.reye_3d, face_2d_head, cam_matrix, dist_coeffs, flags=cv2.SOLVEPNP_ITERATIVE)
 
-
-        # Get rotational matrix from rotational vector
-        l_rmat, _ = cv2.Rodrigues(l_rvec)
-        r_rmat, _ = cv2.Rodrigues(r_rvec)
-
-        # [0] changes pitch
-        # [1] changes roll
-        # [2] changes yaw
-        # +1 changes ~45 degrees (pitch down, roll tilts left (counterclockwise), yaw spins left (counterclockwise))
-
         # Adjust headpose vector with gaze score
         l_gaze_rvec = np.array(l_rvec)
         l_gaze_rvec[2][0] -= (lx_score-.5) * self.x_score_multiplier

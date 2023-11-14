@@ -48,7 +48,7 @@ class DriverDetection(Node):
                 print("Can't recieve frame (stream end?). Ending...")
                 break
 
-            image_face = self.faceMeshDetector.findFaceMesh(frame)
+            image_face = self.faceMeshDetector.findFaceMesh(frame, False)
             image_pose = self.poseDetector.findPose(frame)
             image_iris = self.faceMeshDetector.findIris(frame)
             image_hands = self.handDetector.findHands(frame)
