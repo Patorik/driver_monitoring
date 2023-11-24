@@ -220,12 +220,12 @@ class GazeTracker(Node):
         else:
             result_direction.append("MIDDLE")
 
-        result_horizontal_publish = String()
-        result_vertical_publish = String()
-        result_horizontal_publish.data = result_direction[0]
-        result_vertical_publish.data = result_direction[1]
-
         if len(result_direction) == 2:
+            result_horizontal_publish = String()
+            result_vertical_publish = String()
+            result_horizontal_publish.data = result_direction[0]
+            result_vertical_publish.data = result_direction[1]
+        
             self.face_direction_horizontal.publish(result_horizontal_publish)
             self.face_direction_vertical.publish(result_vertical_publish)
         
