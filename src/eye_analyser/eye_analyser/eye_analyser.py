@@ -52,10 +52,11 @@ class Analyser(Node):
         self.right_eye_coords = msg.data[0:8]
         # print(f"Left eye:{self.left_eye_coords[0]}")
         # print(f"Right eye:{self.right_eye_coords}")
-        self.detectBlink()
-        # self.detectDisturbedEye(self.count_closed_left_eye_frames)
-        self.detectDisturbedEye(self.count_closed_left_eye_frames, self.count_closed_right_eye_frames)
-        self.detectSleep()
+        if len(msg.data) == 16:
+            self.detectBlink()
+            # self.detectDisturbedEye(self.count_closed_left_eye_frames)
+            self.detectDisturbedEye(self.count_closed_left_eye_frames, self.count_closed_right_eye_frames)
+            self.detectSleep()
 
     def detectBlink(self, min_ratio=5.0):
         """
@@ -136,9 +137,10 @@ class Analyser(Node):
         if self.both_eyes_closed and not self.is_sleeping.data:
             if self.count_closed_both_eyes_frames >= min_frames_if_disturbed:
                 self.is_disturbed.data = True
-        else:
-            if count_closed_right_eye_frames >= min_frames_if_disturbed or count_close_left_eye_frames >= min_frames_if_disturbed:
+        elif count_closed_right_eye_frames >= min_frames_if_disturbed or count_close_left_eye_frames >= min_frames_if_disturbed:
                 self.is_disturbed.data = True
+        else:
+            self.is_disturbed.data = False
         self.is_disturbed_pub.publish(self.is_disturbed)
 
     def detectSleep(self, min_frames_if_sleeping=30):

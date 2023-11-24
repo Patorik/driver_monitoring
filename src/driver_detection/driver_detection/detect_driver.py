@@ -18,7 +18,8 @@ import time
 class DriverDetection(Node):
     def __init__(self):
         super().__init__('driver_detector')
-        self.cap = cv2.VideoCapture(0)
+        # self.cap = cv2.VideoCapture(0)
+        self.cap = cv2.VideoCapture("/home/patorik/MEGA/SZE/MSc/diplomamunka/workspace/development/res/VID_20231123_140609.mp4")
         self.resolution = [1280, 720]
 
         self.poseDetector = PoseDetector()

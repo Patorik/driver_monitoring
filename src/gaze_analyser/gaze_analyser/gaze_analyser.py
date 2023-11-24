@@ -55,6 +55,9 @@ class GazeTracker(Node):
         Callback function for gaze keypoints
         """
 
+        if len(msg.data) < 32:
+            return
+        
         face_2d = []
         nose = msg.data[0:2]
         chin = msg.data[2:4]
