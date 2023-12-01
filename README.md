@@ -8,8 +8,8 @@ Every requirements of the nodes are stored in the *src/<package_name>/requiremen
 ## Bag files
 
 ## YOLOv7 networks
-[**YOLOv7**](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7.pt)
-[**YOLOv7-tiny**](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-tiny.pt)
+- [**YOLOv7**](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7.pt)
+- [**YOLOv7-tiny**](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-tiny.pt)
 
 ## Run the program
 1. Use `colcon build` to build the packages.
