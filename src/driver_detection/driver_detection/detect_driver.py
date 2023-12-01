@@ -19,7 +19,7 @@ class DriverDetection(Node):
     def __init__(self):
         super().__init__('driver_detector')
         # self.cap = cv2.VideoCapture(0)
-        self.cap = cv2.VideoCapture("/home/patorik/MEGA/SZE/MSc/diplomamunka/workspace/development/res/VID_20231123_140609.mp4")
+        self.cap = cv2.VideoCapture("/home/patorik/Videos/Egyetem/diplomamunka/VID_20231123_142031.mp4")
         self.resolution = [1280, 720]
 
         self.poseDetector = PoseDetector()
@@ -50,9 +50,9 @@ class DriverDetection(Node):
                 break
 
             image_face = self.faceMeshDetector.findFaceMesh(frame, False)
-            image_pose = self.poseDetector.findPose(frame)
+            # image_pose = self.poseDetector.findPose(frame)
             image_iris = self.faceMeshDetector.findIris(frame)
-            image_hands = self.handDetector.findHands(frame)
+            # image_hands = self.handDetector.findHands(frame)
             cTime = time.time()
             fps = 1/(cTime-pTime)
             pTime = cTime
@@ -102,8 +102,8 @@ class DriverDetection(Node):
                 cv2.line(image_face, left_eye_top, left_eye_bottom, (0, 255, 0), 2)
                 self.image_face_pub.publish(self.br.cv2_to_imgmsg(image_face))
 
-            self.image_hand_pub.publish(self.br.cv2_to_imgmsg(image_hands))
-            self.image_pose_pub.publish(self.br.cv2_to_imgmsg(image_pose))
+            # self.image_hand_pub.publish(self.br.cv2_to_imgmsg(image_hands))
+            # self.image_pose_pub.publish(self.br.cv2_to_imgmsg(image_pose))
             self.image_iris_pub.publish(self.br.cv2_to_imgmsg(image_iris))
             self.iris_coords_pub.publish(iris_coordinates)
             self.eye_keypoints_pub.publish(eye_coordinates)

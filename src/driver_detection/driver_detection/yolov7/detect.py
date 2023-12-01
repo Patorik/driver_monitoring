@@ -7,12 +7,12 @@ import torch
 import torch.backends.cudnn as cudnn
 from numpy import random
 
-from models.experimental import attempt_load
-from utils.datasets import LoadStreams, LoadImages
-from utils.general import check_img_size, check_requirements, check_imshow, non_max_suppression, apply_classifier, \
+from yolov7.models.experimental import attempt_load
+from yolov7.utils.datasets import LoadStreams, LoadImages
+from yolov7.utils.general import check_img_size, check_requirements, check_imshow, non_max_suppression, apply_classifier, \
     scale_coords, xyxy2xywh, strip_optimizer, set_logging, increment_path
-from utils.plots import plot_one_box
-from utils.torch_utils import select_device, load_classifier, time_synchronized, TracedModel
+from yolov7.utils.plots import plot_one_box
+from yolov7.utils.torch_utils import select_device, load_classifier, time_synchronized, TracedModel
 
 import rclpy
 from rclpy.node import Node
@@ -22,6 +22,7 @@ from std_msgs.msg import Int32MultiArray
 class CellPhoneDetector(Node):
     def __init__(self):
         super().__init__('driver_detector')
+        self.cTime = self.pTime = 0
         self.cell_phone_coordinates_pub = self.create_publisher(Int32MultiArray, 'cell_phone_coordinates', 1)
 
     def detect(self, save_img=False):
@@ -125,6 +126,7 @@ class CellPhoneDetector(Node):
                         n = (det[:, -1] == c).sum()  # detections per class
                         s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
 
+                    phoneID = 0
                     # Write results
                     for *xyxy, conf, cls in reversed(det):
                         if save_txt:  # Write to file
@@ -137,13 +139,18 @@ class CellPhoneDetector(Node):
                             label = f'{names[int(cls)]} {conf:.2f}'
                             cell_phone_coordinates = Int32MultiArray()
                             print(f"Coordinates {xyxy}")
-                            cell_phone_coordinates.data = [int(xyxy[0]), int(xyxy[1]), int(xyxy[2]), int(xyxy[3])]
+                            cell_phone_coordinates.data = [phoneID, int(xyxy[0]), int(xyxy[1]), int(xyxy[2]), int(xyxy[3])]
                             plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=1)
+                            phoneID += 1
                             self.cell_phone_coordinates_pub.publish(cell_phone_coordinates)
 
 
                 # Print time (inference + NMS)
                 print(f'{s}Done. ({(1E3 * (t2 - t1)):.1f}ms) Inference, ({(1E3 * (t3 - t2)):.1f}ms) NMS')
+                self.cTime = time.time()
+                yoloV7FPS = 1/(self.cTime-self.pTime)
+                self.pTime = self.cTime
+                print(f"with {yoloV7FPS} fps")
 
                 # Stream results
                 if view_img:
